@@ -51,11 +51,9 @@ def get(model, **kwargs):
 # See if object already exists for uniqueness
 def get_or_create(model, **kwargs):
     instance = db.session.query(model).filter_by(**kwargs).first()
-    if instance:
-        return instance
-    else:
+    if not instance:
         instance = model(**kwargs)
-        return instance
+    return instance
 
 
 def flush_db():
@@ -250,9 +248,10 @@ def import_quote():
             q.email_id = quote["email_id"]
         if "post_id" in quote:
             q.post_id = quote["post_id"]
-        categories = []
-        for cat in quote["category"].split(", "):
-            categories += [get(QuoteCategory, slug=cat)]
+        categories = [
+            get(QuoteCategory, slug=cat)
+            for cat in quote["category"].split(", ")
+        ]
         q.categories = categories
         db.session.add(q)
     db.session.commit()
@@ -284,21 +283,12 @@ def import_doc():
 
     for doc in docs:
         authorlist = doc["author"]
-        dbauthor = []
-        for auth in authorlist:
-            dbauthor += [get(Author, slug=auth)]
+        dbauthor = [get(Author, slug=auth) for auth in authorlist]
         formlist = doc["formats"]
-        dbformat = []
-        for form in formlist:
-            dbformat += [get_or_create(Format, name=form)]
+        dbformat = [get_or_create(Format, name=form) for form in formlist]
         catlist = doc["categories"]
-        dbcat = []
-        for cat in catlist:
-            dbcat += [get_or_create(Category, name=cat)]
-        if "external" in doc:
-            ext = doc["external"]
-        else:
-            ext = None
+        dbcat = [get_or_create(Category, name=cat) for cat in catlist]
+        ext = doc["external"] if "external" in doc else None
         doc = Doc(
             id=doc["id"],
             title=doc["title"],
@@ -322,25 +312,13 @@ def import_research_doc():
 
     for doc in docs:
         authorlist = doc["author"]
-        dbauthor = []
-        for auth in authorlist:
-            dbauthor += [get(Author, slug=auth)]
+        dbauthor = [get(Author, slug=auth) for auth in authorlist]
         formlist = doc["formats"]
-        dbformat = []
-        for form in formlist:
-            dbformat += [get_or_create(Format, name=form)]
+        dbformat = [get_or_create(Format, name=form) for form in formlist]
         catlist = doc["categories"]
-        dbcat = []
-        for cat in catlist:
-            dbcat += [get_or_create(Category, name=cat)]
-        if "external" in doc:
-            ext = doc["external"]
-        else:
-            ext = None
-        if "lit_id" in doc:
-            lit = doc["lit_id"]
-        else:
-            lit = None
+        dbcat = [get_or_create(Category, name=cat) for cat in catlist]
+        ext = doc["external"] if "external" in doc else None
+        lit = doc["lit_id"] if "lit_id" in doc else None
         doc = ResearchDoc(
             id=doc["id"],
             title=doc["title"],
@@ -399,9 +377,7 @@ def import_blog_post():
         db.session.add(blogpost)
         for lang in bp["translations"]:
             translators = bp["translations"][lang]
-            dbtranslator = []
-            for translator in translators:
-                dbtranslator += [get(Translator, name=translator)]
+            dbtranslator = [get(Translator, name=translator) for translator in translators]
             blog_translation = BlogPostTranslation(
                 language=get(Language, ietf=lang),
                 translators=dbtranslator,

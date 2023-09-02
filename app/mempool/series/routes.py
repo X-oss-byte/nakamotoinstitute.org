@@ -16,8 +16,7 @@ def index():
 @bp.route("/<string:slug>/")
 @cache.cached()
 def detail(slug):
-    series = BlogSeries.query.filter_by(slug=slug).first()
-    if series:
+    if series := BlogSeries.query.filter_by(slug=slug).first():
         return render_template("mempool/series/detail.html", series=series)
     else:
         return redirect(url_for("mempool.series.index"))

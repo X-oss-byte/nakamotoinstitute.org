@@ -30,10 +30,11 @@ def detail(slug):
     # Redirect for new appcoin slug
     if slug == "appcoins-are-fraudulent":
         return redirect(url_for("mempool.detail", slug="appcoins-are-snake-oil"))
-    blog_post = (
-        BlogPost.query.filter_by(slug=slug).order_by(desc(BlogPost.date)).first()
-    )
-    if blog_post:
+    if blog_post := (
+        BlogPost.query.filter_by(slug=slug)
+        .order_by(desc(BlogPost.date))
+        .first()
+    ):
         english = Language.query.filter_by(ietf="en").first()
         page = pages.get(f"mempool/{slug}")
         translations = [translation.language for translation in blog_post.translations]
@@ -66,45 +67,41 @@ def detail_translation(slug, language):
         BlogPost.query.filter_by(slug=slug).order_by(desc(BlogPost.date)).first()
     )
     language_lower = language.lower()
-    if blog_post is not None:
-        if language_lower == "en":
-            return redirect(url_for("mempool.detail", slug=slug))
-        elif language != language_lower:
-            return redirect(
-                url_for(
-                    "mempool.detail_translation", slug=slug, language=language_lower
-                )
-            )
-        post_language = Language.query.filter_by(ietf=language_lower).first()
-        if post_language not in [
-            translation.language for translation in blog_post.translations
-        ]:
-            return redirect(url_for("mempool.detail", slug=slug))
-        else:
-            page = pages.get(f"mempool/{slug}-{language}")
-            rtl = False
-            if language in ["ar", "fa", "he"]:
-                rtl = True
-            translations = [Language.query.get(1)]
-            translators = None
-            blog_post_translations = blog_post.translations
-            blog_post_translations.sort(key=lambda x: x.language.name)
-            for translation in blog_post_translations:
-                if translation.language.ietf != language_lower:
-                    translations.append(translation.language)
-                else:
-                    translators = translation.translators
-            return render_template(
-                "mempool/detail.html",
-                blog_post=blog_post,
-                page=page,
-                language=post_language,
-                rtl=rtl,
-                translations=translations,
-                translators=translators,
-            )
-    else:
+    if blog_post is None:
         return redirect(url_for("mempool.index"))
+    if language_lower == "en":
+        return redirect(url_for("mempool.detail", slug=slug))
+    elif language != language_lower:
+        return redirect(
+            url_for(
+                "mempool.detail_translation", slug=slug, language=language_lower
+            )
+        )
+    post_language = Language.query.filter_by(ietf=language_lower).first()
+    if post_language not in [
+        translation.language for translation in blog_post.translations
+    ]:
+        return redirect(url_for("mempool.detail", slug=slug))
+    page = pages.get(f"mempool/{slug}-{language}")
+    rtl = language in ["ar", "fa", "he"]
+    translations = [Language.query.get(1)]
+    translators = None
+    blog_post_translations = blog_post.translations
+    blog_post_translations.sort(key=lambda x: x.language.name)
+    for translation in blog_post_translations:
+        if translation.language.ietf != language_lower:
+            translations.append(translation.language)
+        else:
+            translators = translation.translators
+    return render_template(
+        "mempool/detail.html",
+        blog_post=blog_post,
+        page=page,
+        language=post_language,
+        rtl=rtl,
+        translations=translations,
+        translators=translators,
+    )
 
 
 @bp.route("/feed/")

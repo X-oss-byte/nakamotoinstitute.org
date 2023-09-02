@@ -37,10 +37,9 @@ def detail_id(doc_id):
     doc = Doc.query.filter_by(id=doc_id).first()
     if doc is not None:
         return redirect(url_for("literature.detail", slug=doc.slug))
-    else:
-        doc = ResearchDoc.query.filter_by(lit_id=doc_id).first()
-        if doc is not None:
-            return redirect(url_for("research.detail", slug=doc.slug))
+    doc = ResearchDoc.query.filter_by(lit_id=doc_id).first()
+    if doc is not None:
+        return redirect(url_for("research.detail", slug=doc.slug))
     return redirect(url_for("literature.index"))
 
 
@@ -50,13 +49,12 @@ def view(slug, ext):
     doc = Doc.query.filter_by(slug=slug).first()
     if doc is not None:
         formats = [doc_format.name for doc_format in doc.formats]
-        if ext in formats:
-            if ext == "html":
-                return redirect(url_for("main.doc_view", slug=slug))
-            else:
-                return redirect(url_for("static", filename=f"docs/{slug}.{ext}"))
-        else:
+        if ext not in formats:
             return redirect(url_for("literature.detail", slug=slug))
+        if ext == "html":
+            return redirect(url_for("main.doc_view", slug=slug))
+        else:
+            return redirect(url_for("static", filename=f"docs/{slug}.{ext}"))
     else:
         doc = ResearchDoc.query.filter_by(slug=slug).first()
         if doc is not None:
@@ -71,13 +69,12 @@ def view_id(doc_id, ext):
     if doc is not None:
         formats = [doc_format.name for doc_format in doc.formats]
         slug = doc.slug
-        if ext in formats:
-            if ext == "html":
-                return redirect(url_for("main.doc_view", slug=slug))
-            else:
-                return redirect(url_for("static", filename=f"docs/{slug}.{ext}"))
-        else:
+        if ext not in formats:
             return redirect(url_for("literature.detail", slug=doc.slug))
+        if ext == "html":
+            return redirect(url_for("main.doc_view", slug=slug))
+        else:
+            return redirect(url_for("static", filename=f"docs/{slug}.{ext}"))
     else:
         doc = ResearchDoc.query.filter_by(lit_id=doc_id).first()
         if doc is not None:
