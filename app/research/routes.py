@@ -20,13 +20,12 @@ def index():
 @cache.cached()
 def detail(slug):
     doc = ResearchDoc.query.filter_by(slug=slug).first()
-    if doc is not None:
-        formats = [doc_format.name for doc_format in doc.formats]
-        return render_template(
-            "literature/detail.html", doc=doc, formats=formats, is_lit=False
-        )
-    else:
+    if doc is None:
         return redirect(url_for("research.index"))
+    formats = [doc_format.name for doc_format in doc.formats]
+    return render_template(
+        "literature/detail.html", doc=doc, formats=formats, is_lit=False
+    )
 
 
 @bp.route("/<int:doc_id>/", methods=["GET"])
@@ -43,32 +42,32 @@ def detail_id(doc_id):
 @cache.cached()
 def view(slug, ext):
     doc = ResearchDoc.query.filter_by(slug=slug).first()
-    if doc is not None:
-        formats = [doc_format.name for doc_format in doc.formats]
-        if ext in formats:
-            if ext == "html":
-                return redirect(url_for("main.doc_view", slug=slug))
-            else:
-                return redirect(url_for("static", filename=f"docs/{slug}.{ext}"))
-        else:
-            return redirect(url_for("research.detail", slug=slug))
-    else:
+    if doc is None:
         return redirect(url_for("research.index"))
+    formats = [doc_format.name for doc_format in doc.formats]
+    if ext in formats:
+        return (
+            redirect(url_for("main.doc_view", slug=slug))
+            if ext == "html"
+            else redirect(url_for("static", filename=f"docs/{slug}.{ext}"))
+        )
+    else:
+        return redirect(url_for("research.detail", slug=slug))
 
 
 @bp.route("/<int:doc_id>/<string:ext>/", methods=["GET"])
 @cache.cached()
 def view_id(doc_id, ext):
     doc = ResearchDoc.query.filter_by(id=doc_id).first()
-    if doc is not None:
-        formats = [doc_format.name for doc_format in doc.formats]
-        slug = doc.slug
-        if ext in formats:
-            if ext == "html":
-                return redirect(url_for("main.doc_view", slug=slug))
-            else:
-                return redirect(url_for("static", filename=f"docs/{slug}.{ext}"))
-        else:
-            return redirect(url_for("research.detail", slug=doc.slug))
-    else:
+    if doc is None:
         return redirect(url_for("research.index"))
+    formats = [doc_format.name for doc_format in doc.formats]
+    slug = doc.slug
+    if ext in formats:
+        return (
+            redirect(url_for("main.doc_view", slug=slug))
+            if ext == "html"
+            else redirect(url_for("static", filename=f"docs/{slug}.{ext}"))
+        )
+    else:
+        return redirect(url_for("research.detail", slug=doc.slug))

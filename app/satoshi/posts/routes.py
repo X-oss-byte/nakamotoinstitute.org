@@ -89,18 +89,17 @@ def threads(source):
 def detail_thread(source, thread_id):
     view_query = request.args.get("view")
     posts = Post.query.filter_by(thread_id=thread_id)
-    if len(posts.all()) > 0:
-        thread = posts[0].forum_thread
-        if thread.source != source:
-            return redirect(
-                url_for(
-                    "satoshi.posts.detail_thread",
-                    source=thread.source,
-                    thread_id=thread_id,
-                )
-            )
-    else:
+    if len(posts.all()) <= 0:
         return redirect(url_for("satoshi.posts.index", view="threads"))
+    thread = posts[0].forum_thread
+    if thread.source != source:
+        return redirect(
+            url_for(
+                "satoshi.posts.detail_thread",
+                source=thread.source,
+                thread_id=thread_id,
+            )
+        )
     if view_query == "satoshi":
         posts = posts.filter(Post.satoshi_id.isnot(None))
     posts = posts.all()

@@ -67,24 +67,22 @@ def doc_view(slug):
     doc = Doc.query.filter_by(slug=slug).first()
     if doc is not None:
         formats = [format.name for format in doc.formats]
-        if "html" in formats:
-            page = pages.get(f"literature/{slug}")
-            return render_template(
-                "literature/doc.html", doc=doc, page=page, doc_type="literature"
-            )
-        else:
+        if "html" not in formats:
             return redirect(url_for("literature.detail", slug=slug))
+        page = pages.get(f"literature/{slug}")
+        return render_template(
+            "literature/doc.html", doc=doc, page=page, doc_type="literature"
+        )
     else:
         doc = ResearchDoc.query.filter_by(slug=slug).first()
         if doc is not None:
             formats = [format.name for format in doc.formats]
-            if "html" in formats:
-                page = pages.get(f"research/{slug}")
-                return render_template(
-                    "literature/doc.html", doc=doc, page=page, doc_type="research"
-                )
-            else:
+            if "html" not in formats:
                 return redirect(url_for("research.detail", slug=slug))
+            page = pages.get(f"research/{slug}")
+            return render_template(
+                "literature/doc.html", doc=doc, page=page, doc_type="research"
+            )
     return redirect(url_for("main.index"))
 
 
@@ -111,10 +109,9 @@ def reroute(url_slug, ext):
     doc = Doc.query.filter_by(slug=url_slug).first()
     if doc is not None:
         return redirect(url_for("literature.view", slug=doc.slug, ext=ext))
-    else:
-        doc = ResearchDoc.query.filter_by(slug=url_slug).first()
-        if doc is not None:
-            return redirect(url_for("research.view", slug=doc.slug, ext=ext))
+    doc = ResearchDoc.query.filter_by(slug=url_slug).first()
+    if doc is not None:
+        return redirect(url_for("research.view", slug=doc.slug, ext=ext))
     return redirect(url_for("main.index"))
 
 

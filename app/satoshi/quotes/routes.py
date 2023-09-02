@@ -17,19 +17,19 @@ def index():
 @cache.cached()
 def detail_category(slug):
     category = QuoteCategory.query.filter_by(slug=slug).first()
-    if category is not None:
-        order = request.args.get("order")
-        quote_query = category.quotes
-        if order == "desc":
-            quote_query = quote_query.order_by(desc(Quote.date))
-        else:
-            quote_query = quote_query.order_by(Quote.date)
-        quotes = quote_query.all()
-        return render_template(
-            "satoshi/quotes/detail_category.html",
-            quotes=quotes,
-            category=category,
-            order=order,
-        )
-    else:
+    if category is None:
         return redirect(url_for("satoshi.quotes.index"))
+    order = request.args.get("order")
+    quote_query = category.quotes
+    quote_query = (
+        quote_query.order_by(desc(Quote.date))
+        if order == "desc"
+        else quote_query.order_by(Quote.date)
+    )
+    quotes = quote_query.all()
+    return render_template(
+        "satoshi/quotes/detail_category.html",
+        quotes=quotes,
+        category=category,
+        order=order,
+    )

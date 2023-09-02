@@ -16,7 +16,7 @@ def index():
 @cache.cached()
 def index_threads():
     threads = EmailThread.query.all()
-    cryptography_threads = threads[0:2]
+    cryptography_threads = threads[:2]
     bitcoin_list_threads = threads[2:]
     return render_template(
         "satoshi/emails/index_threads.html",
@@ -91,18 +91,17 @@ def threads(source):
 def detail_thread(source, thread_id):
     view_query = request.args.get("view")
     emails = Email.query.filter_by(thread_id=thread_id)
-    if len(emails.all()) > 0:
-        thread = emails[0].email_thread
-        if thread.source != source:
-            return redirect(
-                url_for(
-                    "satoshi.emails.detail_thread",
-                    source=thread.source,
-                    thread_id=thread_id,
-                )
-            )
-    else:
+    if len(emails.all()) <= 0:
         return redirect(url_for("satoshi.emails.index", view="threads"))
+    thread = emails[0].email_thread
+    if thread.source != source:
+        return redirect(
+            url_for(
+                "satoshi.emails.detail_thread",
+                source=thread.source,
+                thread_id=thread_id,
+            )
+        )
     if view_query == "satoshi":
         emails = emails.filter(Email.satoshi_id.isnot(None))
     emails = emails.all()
